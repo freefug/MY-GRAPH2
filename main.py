@@ -258,3 +258,35 @@ with st.container():
     st.info(
         "**이 그래프로 알 수 있는 것:** 원의 크기(첫 주 관객 수)가 큰 영화일수록 최종 총 관객 수(Y축)도 높게 형성되는 경향을 보여, 초반 흥행 성공(초반 관객 동원력)이 최종 총 관객 수 결정에 핵심적인 역할을 함을 알 수 있습니다."
     )
+
+# -------------------------------------------------------------------
+# 섹션 7: 제작 국가 및 장르별 영화 편수 (선버스트 차트)
+# -------------------------------------------------------------------
+st.divider()
+st.header("7. 제작 국가 및 장르별 영화 편수 (선버스트 차트)")
+
+# 국가-장르별 영화 편수 집계
+nation_genre_df = (
+    df.groupby(["nation", "genre"]).size().reset_index(name="count")
+)
+
+# 선버스트 차트 생성
+fig_sunburst = px.sunburst(
+    nation_genre_df,
+    path=["nation", "genre"],
+    values="count",
+    title="제작 국가 → 장르 계층 구조별 영화 편수",
+    labels={"nation": "제작 국가", "genre": "장르", "count": "영화 편수"},
+)
+
+fig_sunburst.update_traces(
+    hovertemplate="<b>%{label}</b><br>영화 편수: %{value}편<extra></extra>"
+)
+
+st.plotly_chart(fig_sunburst, use_container_width=True)
+
+# 시각화 해석 구역
+with st.container():
+    st.info(
+        "**이 그래프로 알 수 있는 것:** 각 제작 국가별로 주력 생산하는 주요 장르 비중의 차이를 계층 구조로 직관적 비교가 가능하며, 국가별 장르 다양성 양상을 한눈에 파악할 수 있습니다."
+    )
