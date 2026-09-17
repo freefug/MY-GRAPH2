@@ -168,3 +168,48 @@ with st.container():
     st.info(
         "**이 그래프로 알 수 있는 것:** 개봉일 스크린 수가 많을수록 총 관객 수가 증가하는 명확한 양(+)의 상관관계를 보이지만, 일부 영화는 적은 스크린 수에도 불구하고 입소문을 통해 높은 총 관객 수를 기록하는 등 예외적인 사례도 존재합니다."
     )
+
+# -------------------------------------------------------------------
+# 섹션 5: 주요 장르별 총 관객 수 분포 (박스플롯)
+# -------------------------------------------------------------------
+st.divider()
+st.header("5. 주요 장르별 총 관객 수 분포 (10편 이상 장르)")
+
+# 영화 편수가 10편 이상인 장르 필터링
+genre_counts_all = df["genre"].value_counts()
+major_genres = genre_counts_all[genre_counts_all >= 10].index
+df_major_genres = df[df["genre"].isin(major_genres)]
+
+# 박스플롯 생성
+fig_box = px.box(
+    df_major_genres,
+    x="genre",
+    y="total_audi",
+    color="genre",
+    points="outliers",  # 이상치 점 표시
+    hover_name="movieNm",
+    hover_data={
+        "total_audi": ":,d",
+        "genre": True
+    },
+    labels={
+        "genre": "장르",
+        "total_audi": "총 관객 수",
+        "movieNm": "영화명"
+    },
+    title="주요 장르별 총 관객 수 분포 및 이상치"
+)
+
+fig_box.update_layout(
+    xaxis_title="장르",
+    yaxis_title="총 관객 수(명)",
+    showlegend=False
+)
+
+st.plotly_chart(fig_box, use_container_width=True)
+
+# 시각화 해석 구역
+with st.container():
+    st.info(
+        "**이 그래프로 알 수 있는 것:** 대부분 장르의 중앙값(Median) 관객 수는 낮은 편이지만, 상단에 위치한 이상치(Outlier) 점들을 통해 해당 장르의 메가 히트 흥행작들을 한눈에 식별할 수 있습니다."
+    )
