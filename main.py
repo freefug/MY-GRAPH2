@@ -213,3 +213,48 @@ with st.container():
     st.info(
         "**이 그래프로 알 수 있는 것:** 대부분 장르의 중앙값(Median) 관객 수는 낮은 편이지만, 상단에 위치한 이상치(Outlier) 점들을 통해 해당 장르의 메가 히트 흥행작들을 한눈에 식별할 수 있습니다."
     )
+
+# -------------------------------------------------------------------
+# 섹션 6: 스크린 수 vs 총 관객 수 vs 첫 주 관객 수 (버블 차트)
+# -------------------------------------------------------------------
+st.divider()
+st.header("6. 스크린 수 vs 총 관객 수 vs 첫 주 관객 수 (버블 차트)")
+
+# 버블 차트 생성 (점 크기: 개봉 첫 주 관객 수)
+fig_bubble = px.scatter(
+    df,
+    x="first_scrn",
+    y="total_audi",
+    size="first_week_audi",
+    color="genre",
+    hover_name="movieNm",
+    hover_data={
+        "first_scrn": ":,d",
+        "total_audi": ":,d",
+        "first_week_audi": ":,d",
+        "genre": True
+    },
+    labels={
+        "first_scrn": "개봉일 스크린 수",
+        "total_audi": "총 관객 수",
+        "first_week_audi": "개봉 첫 주 관객 수",
+        "genre": "장르",
+        "movieNm": "영화명"
+    },
+    size_max=50,
+    title="스크린 수와 총 관객 수 및 첫 주 관객 수(버블 크기) 관계"
+)
+
+fig_bubble.update_traces(marker=dict(opacity=0.7, sizemode="area"))
+fig_bubble.update_layout(
+    xaxis_title="개봉일 스크린 수(개)",
+    yaxis_title="총 관객 수(명)"
+)
+
+st.plotly_chart(fig_bubble, use_container_width=True)
+
+# 시각화 해석 구역
+with st.container():
+    st.info(
+        "**이 그래프로 알 수 있는 것:** 원의 크기(첫 주 관객 수)가 큰 영화일수록 최종 총 관객 수(Y축)도 높게 형성되는 경향을 보여, 초반 흥행 성공(초반 관객 동원력)이 최종 총 관객 수 결정에 핵심적인 역할을 함을 알 수 있습니다."
+    )
