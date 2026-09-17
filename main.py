@@ -2,7 +2,6 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-
 # 페이지 기본 설정
 st.set_page_config(
     page_title="영화 데이터 그래프 도감 2 - 분포와 관계",
@@ -18,7 +17,7 @@ def load_data():
 
     # 장르(genre) 컬럼 전처리: '|' 기호로 연결된 여러 장르 중 첫 번째 장르만 추출
     df["genre"] = (
-        df["genre"].fillna("기타").apply(lambda x: str(x).split("|")[0].strip())
+        df["genre"].fillna("기타").astype(str).apply(lambda x: x.split("|")[0].strip())
     )
 
     return df
@@ -37,9 +36,8 @@ data = load_data()
 st.header("1. 장르별 영화 편수 비율")
 
 # 장르별 영화 수 집계
-genre_counts = (
-    data["genre"].value_counts().reset_index(name="count").rename(columns={"index": "genre"})
-)
+genre_counts = data["genre"].value_counts().reset_index()
+genre_counts.columns = ["genre", "count"]
 
 # Plotly 도넛 차트 생성
 fig = px.pie(
@@ -50,10 +48,10 @@ fig = px.pie(
     title="장르별 영화 분포",
 )
 
-# 호버 툴팁 설정 (장르, 편수, 비율 표시)
+# 호버 툴팁 및 표시 레이블 설정 (장르, 편수, 비율 표시)
 fig.update_traces(
     textinfo="percent+label",
-    hovertemplate="<b>장르: %{label}</b><br>영화 수: %{value}편<br>비율: %{percent}",
+    hovertemplate="<b>장르: %{label}</b><br>영화 수: %{value}편<br>비율: %{percent}<extra></extra>",
 )
 
 # 그래프 출력
