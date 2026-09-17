@@ -61,18 +61,19 @@ with st.container():
 st.divider()
 st.header("2. 장르 및 영화별 총 관객 수 분포")
 
-# Plotly 트리맵 생성 (계층 구조: genre -> movieNm)
+# 트리맵 생성: hover_data에 movieNm을 포함하고 customdata로 전달
 fig_treemap = px.treemap(
     df,
-    path=[px.Constant("전체"), "genre", "movieNm"],
+    path=[px.Constant("전체"), "genre", "movieCd"],
     values="total_audi",
     color="genre",
-    hover_data={"total_audi": ":,d"},
-    labels={"total_audi": "총 관객 수", "genre": "장르", "movieNm": "영화명"},
+    hover_data={"movieCd": False, "movieNm": True, "total_audi": ":,d"},
 )
 
+# 라벨에 movieCd 대신 실제 영화명이 노출되도록 툴팁 및 호버 템플릿 설정
 fig_treemap.update_traces(
-    hovertemplate="<b>%{label}</b><br>총 관객 수: %{value:,}명",
+    hovertext=df["movieNm"],
+    hovertemplate="<b>%{hovertext}</b><br>장르: %{parent}<br>총 관객 수: %{value:,}명<extra></extra>",
     root_color="lightgrey",
 )
 
