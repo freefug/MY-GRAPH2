@@ -20,11 +20,11 @@ def load_data():
     # 장르 데이터 전처리: .str 접근자를 사용해 안전하게 분리 및 공백 제거
     df["genre"] = df["genre"].astype(str).str.split("|").str[0].str.strip()
 
-    # 트리맵 계층 구조 중복 방지: 동일 영화명이 있을 경우 대비해 식별용 표기 생성
-    # 예: 만약 동명의 영화가 존재하더라도 에러가 나지 않도록 수식 처리
-    df_unique = df.drop_duplicates(subset=["movieNm", "genre"]).copy()
+    # 트리맵 중복 에러 방지: 동명 영화 구분용 고유 레이블 생성 (예: "영화명 (영화코드)")
+    # movieCd가 없는 경우에 대비해 행 번호(index) 기반 식별자 적용
+    df["movie_id"] = df["movieNm"] + " (" + df.index.astype(str) + ")"
 
-    return df_unique
+    return df
 
 
 df = load_data()
@@ -67,16 +67,16 @@ st.markdown("<br><br>", unsafe_allow_html=True)
 # ==========================================
 st.subheader("2. 장르 및 영화별 총 관객 수 분포")
 
-# Plotly 트리맵 생성 (계층 구조: 장르 -> 영화명, 크기: 총 관객 수)
+# Plotly 트리맵 생성 (고유한 movie_id를 path로 사용하여 중복 에러 방지)
 fig_treemap = px.treemap(
     df,
-    path=["genre", "movieNm"],
+    path=["genre", "movie_id"],
     values="total_audi",
     title="장르 및 영화별 총 관객 수 트리맵",
     custom_data=["movieNm", "total_audi"],
 )
 
-# 마우스 오버 시 영화명과 총 관객 수만 깔끔하게 보이도록 툴팁 설정
+# 마우스 오버 시 순수 영화명과 총 관객 수만 표시되도록 툴팁 설정
 fig_treemap.update_traces(
     hovertemplate="<b>영화명:</b> %{customdata[0]}<br><b>총 관객 수:</b> %{customdata[1]:,}명<extra></extra>"
 )
