@@ -121,12 +121,50 @@ max_movie = df.loc[df["total_audi"].idxmax()]
 max_movie_name = max_movie["movieNm"]
 max_movie_audi = max_movie["total_audi"]
 
-# 관객 수 주요 분포 구간 계산 (상위 편수 구간 계산)
 # 데이터 기반 분석 문구
-st.markdown(
-    f"""
-    **이 그래프로 알 수 있는 것:**
-    - 대다수의 영화(약 80% 이상)가 **100만 명 이하의 관객 수 구간**에 밀집해 있는 극단적인 오른쪽 꼬리 분포(Right-skewed)를 보입니다.
-    - 데이터셋 내에서 가장 관객 수가 많은 영화는 **'{max_movie_name}'**(총 {max_movie_audi:,}명)입니다.
-    """
+with st.container():
+    st.info(
+        f"**이 그래프로 알 수 있는 것:** 대다수의 영화(약 80% 이상)가 **100만 명 이하의 관객 수 구간**에 밀집해 있는 극단적인 오른쪽 꼬리 분포(Right-skewed)를 보입니다. "
+        f"가장 관객 수가 많은 영화는 **'{max_movie_name}'**(총 {max_movie_audi:,}명)입니다."
+    )
+
+# -------------------------------------------------------------------
+# 섹션 4: 개봉일 스크린 수와 총 관객 수의 관계 (산점도)
+# -------------------------------------------------------------------
+st.divider()
+st.header("4. 개봉일 스크린 수 vs 총 관객 수 관계")
+
+# 산점도 생성 (장르별 색상 구분, 마우스 오버 시 영화명 노출)
+fig_scatter = px.scatter(
+    df,
+    x="first_scrn",
+    y="total_audi",
+    color="genre",
+    hover_name="movieNm",
+    hover_data={
+        "first_scrn": ":,d",
+        "total_audi": ":,d",
+        "genre": True
+    },
+    labels={
+        "first_scrn": "개봉일 스크린 수",
+        "total_audi": "총 관객 수",
+        "genre": "장르",
+        "movieNm": "영화명"
+    },
+    title="개봉일 스크린 수에 따른 총 관객 수 분포"
 )
+
+fig_scatter.update_traces(marker=dict(size=9, opacity=0.8))
+fig_scatter.update_layout(
+    xaxis_title="개봉일 스크린 수(개)",
+    yaxis_title="총 관객 수(명)"
+)
+
+st.plotly_chart(fig_scatter, use_container_width=True)
+
+# 시각화 해석 구역
+with st.container():
+    st.info(
+        "**이 그래프로 알 수 있는 것:** 개봉일 스크린 수가 많을수록 총 관객 수가 증가하는 명확한 양(+)의 상관관계를 보이지만, 일부 영화는 적은 스크린 수에도 불구하고 입소문을 통해 높은 총 관객 수를 기록하는 등 예외적인 사례도 존재합니다."
+    )
