@@ -16,9 +16,6 @@ def load_data():
     # 장르 전처리: 세로막대 기호(|)로 분리 후 첫 번째 장르만 추출
     df["genre"] = df["genre"].astype(str).str.split("|").str[0]
 
-    # 트리맵 계층 구조 중복 방지를 위한 표시용 컬럼 생성
-    df["display_name"] = df["movieNm"] + " (" + df["movieCd"].astype(str) + ")"
-
     return df
 
 
@@ -64,17 +61,23 @@ with st.container():
 st.divider()
 st.header("2. 장르 및 영화별 총 관객 수 분포")
 
-# 트리맵 생성 (고유한 display_name 사용)
+# 영화별 중복을 제거하고 관객 수를 합산한 안전한 데이터프레임 생성
+treemap_df = (
+    df.groupby(["genre", "movieNm"], as_index=False)["total_audi"]
+    .sum()
+)
+
+# Plotly 트리맵 생성
 fig_treemap = px.treemap(
-    df,
-    path=[px.Constant("전체"), "genre", "display_name"],
+    treemap_df,
+    path=[px.Constant("전체"), "genre", "movieNm"],
     values="total_audi",
     color="genre",
-    custom_data=["movieNm"],
+    labels={"total_audi": "총 관객 수", "genre": "장르", "movieNm": "영화명"},
 )
 
 fig_treemap.update_traces(
-    hovertemplate="<b>%{customdata[0]}</b><br>총 관객 수: %{value:,}명<extra></extra>",
+    hovertemplate="<b>%{label}</b><br>총 관객 수: %{value:,}명<extra></extra>",
     root_color="lightgrey",
 )
 
