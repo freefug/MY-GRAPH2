@@ -1,6 +1,5 @@
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
 
 # 페이지 설정
@@ -16,6 +15,9 @@ def load_data():
 
     # 장르 전처리: 세로막대 기호(|)로 분리 후 첫 번째 장르만 추출
     df["genre"] = df["genre"].astype(str).str.split("|").str[0]
+
+    # 트리맵 계층 구조 중복 방지를 위한 표시용 컬럼 생성
+    df["display_name"] = df["movieNm"] + " (" + df["movieCd"].astype(str) + ")"
 
     return df
 
@@ -62,42 +64,19 @@ with st.container():
 st.divider()
 st.header("2. 장르 및 영화별 총 관객 수 분포")
 
-# 트리맵용 계층 구조 데이터 생성 (graph_objects 방식)
-labels = ["전체"]
-parents = [""]
-values = [df["total_audi"].sum()]
-custom_labels = ["전체"]
-
-# 1계층: 장르
-genre_grouped = df.groupby("genre")["total_audi"].sum().reset_index()
-for _, row in genre_grouped.iterrows():
-    labels.append(row["genre"])
-    parents.append("전체")
-    values.append(row["total_audi"])
-    custom_labels.append(row["genre"])
-
-# 2계층: 영화
-for _, row in df.iterrows():
-    # 고유 ID로 movieCd 사용
-    labels.append(str(row["movieCd"]))
-    parents.append(row["genre"])
-    values.append(row["total_audi"])
-    # 툴팁 및 표시용 실제 영화명
-    custom_labels.append(row["movieNm"])
-
-# go.Treemap으로 안전한 생성
-fig_treemap = go.Figure(
-    go.Treemap(
-        ids=labels,
-        labels=custom_labels,
-        parents=parents,
-        values=values,
-        branchvalues="totalroot",
-        hovertemplate="<b>%{label}</b><br>총 관객 수: %{value:,}명<extra></extra>",
-    )
+# 트리맵 생성 (고유한 display_name 사용)
+fig_treemap = px.treemap(
+    df,
+    path=[px.Constant("전체"), "genre", "display_name"],
+    values="total_audi",
+    color="genre",
+    custom_data=["movieNm"],
 )
 
-fig_treemap.update_layout(margin=dict(t=10, l=10, r=10, b=10))
+fig_treemap.update_traces(
+    hovertemplate="<b>%{customdata[0]}</b><br>총 관객 수: %{value:,}명<extra></extra>",
+    root_color="lightgrey",
+)
 
 st.plotly_chart(fig_treemap, use_container_width=True)
 
