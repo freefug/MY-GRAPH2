@@ -20,7 +20,11 @@ def load_data():
     # 장르 데이터 전처리: .str 접근자를 사용해 안전하게 분리 및 공백 제거
     df["genre"] = df["genre"].astype(str).str.split("|").str[0].str.strip()
 
-    return df
+    # 트리맵 계층 구조 중복 방지: 동일 영화명이 있을 경우 대비해 식별용 표기 생성
+    # 예: 만약 동명의 영화가 존재하더라도 에러가 나지 않도록 수식 처리
+    df_unique = df.drop_duplicates(subset=["movieNm", "genre"]).copy()
+
+    return df_unique
 
 
 df = load_data()
@@ -66,7 +70,7 @@ st.subheader("2. 장르 및 영화별 총 관객 수 분포")
 # Plotly 트리맵 생성 (계층 구조: 장르 -> 영화명, 크기: 총 관객 수)
 fig_treemap = px.treemap(
     df,
-    path=[px.Constant("전체"), "genre", "movieNm"],
+    path=["genre", "movieNm"],
     values="total_audi",
     title="장르 및 영화별 총 관객 수 트리맵",
     custom_data=["movieNm", "total_audi"],
