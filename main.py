@@ -17,8 +17,8 @@ def load_data():
     url = "https://raw.githubusercontent.com/greatsong/modudata/main/data/kobis_movies.csv"
     df = pd.read_csv(url)
 
-    # 장르 데이터 전처리: 세로막대 기호(|)로 분리된 경우 첫 번째 장르만 사용
-    df["genre"] = df["genre"].astype(str).apply(lambda x: x.split("|")[0].strip())
+    # 장르 데이터 전처리: .str 접근자를 사용해 안전하게 분리 및 공백 제거
+    df["genre"] = df["genre"].astype(str).str.split("|").str[0].str.strip()
 
     return df
 
@@ -324,4 +324,4 @@ st.plotly_chart(fig_days_audi, use_container_width=True)
 # 구분선 및 인사이트 구역
 st.divider()
 st.markdown("💡 **이 그래프로 알 수 있는 것**")
-st.info("10위권에 오래 머문 날수가 길수록 대체로 총 관객 수도 증가하며, 흥행 차트에서의 장기 집권이 최종 관객 수 확 확보에 강한 긍정적 영향을 미침을 알 수 있습니다.")
+st.info("10위권에 오래 머문 날수가 길수록 대체로 총 관객 수도 증가하며, 흥행 차트에서의 장기 집권이 최종 관객 수 확보에 강한 긍정적 영향을 미침을 알 수 있습니다.")
