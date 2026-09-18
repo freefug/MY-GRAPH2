@@ -18,9 +18,16 @@ def load_data():
     # 장르 전처리: 세로막대 기호(|)로 분리 후 첫 번째 장르만 추출
     df["genre"] = df["genre"].astype(str).str.split("|").str[0]
 
-    # 개봉일(openDt) 전처리 및 월(Month) 추출
-    df["openDt"] = pd.to_datetime(df["openDt"], errors="coerce")
-    df["release_month"] = df["openDt"].dt.month
+    # 개봉일(openDt) 날짜 형식 안전 변환 및 월(Month) 추출
+    # 숫자형(예: 20200115) 및 문자열 형태 모두 호환하도록 처리
+    df["openDt_clean"] = df["openDt"].astype(str).str.replace(r"\D", "", regex=True)
+    df["openDt_parsed"] = pd.to_datetime(df["openDt_clean"], format="%Y%m%d", errors="coerce")
+    
+    # 만약 위 변환으로 NaT가 많다면 일반 to_datetime 시도
+    if df["openDt_parsed"].isna().sum() > len(df) * 0.5:
+        df["openDt_parsed"] = pd.to_datetime(df["openDt"], errors="coerce")
+        
+    df["release_month"] = df["openDt_parsed"].dt.month
 
     return df
 
@@ -353,7 +360,9 @@ monthly_df = (
         avg_audi=("total_audi", "mean")
     )
     .reset_index()
+    .sort_values("release_month")
 )
+
 monthly_df["release_month_str"] = monthly_df["release_month"].astype(int).astype(str) + "월"
 
 # 보조 축(Secondary Y-axis)을 포함하는 Subplot 생성
