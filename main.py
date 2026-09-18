@@ -18,9 +18,9 @@ def load_data():
     # 장르 전처리: 세로막대 기호(|)로 분리 후 첫 번째 장르만 추출
     df["genre"] = df["genre"].astype(str).str.split("|").str[0]
 
-    # 개봉일 전처리 및 월(Month) 추출
-    df["release_date"] = pd.to_datetime(df["release_date"], errors="coerce")
-    df["release_month"] = df["release_date"].dt.month
+    # 개봉일(openDt) 전처리 및 월(Month) 추출
+    df["openDt"] = pd.to_datetime(df["openDt"], errors="coerce")
+    df["release_month"] = df["openDt"].dt.month
 
     return df
 
