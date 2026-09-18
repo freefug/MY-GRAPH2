@@ -290,3 +290,44 @@ with st.container():
     st.info(
         "**이 그래프로 알 수 있는 것:** 각 제작 국가별로 주력 생산하는 주요 장르 비중의 차이를 계층 구조로 직관적 비교가 가능하며, 국가별 장르 다양성 양상을 한눈에 파악할 수 있습니다."
     )
+
+# -------------------------------------------------------------------
+# 섹션 8: 10위권 유지 일수 vs 총 관객 수 (산점도)
+# -------------------------------------------------------------------
+st.divider()
+st.header("8. 10위권에 오래 머문 영화는 총 관객도 많은가")
+
+# 10위권 유지 일수 vs 총 관객 수 산점도 생성
+fig_top10_scatter = px.scatter(
+    df,
+    x="days_in_top10",
+    y="total_audi",
+    color="genre",
+    hover_name="movieNm",
+    hover_data={
+        "days_in_top10": ":,d",
+        "total_audi": ":,d",
+        "genre": True
+    },
+    labels={
+        "days_in_top10": "10위권 유지 일수(일)",
+        "total_audi": "총 관객 수(명)",
+        "genre": "장르",
+        "movieNm": "영화명"
+    },
+    title="10위권에 오래 머문 영화는 총 관객도 많은가"
+)
+
+fig_top10_scatter.update_traces(marker=dict(size=9, opacity=0.8))
+fig_top10_scatter.update_layout(
+    xaxis_title="10위권 유지 일수(일)",
+    yaxis_title="총 관객 수(명)"
+)
+
+st.plotly_chart(fig_top10_scatter, use_container_width=True)
+
+# 시각화 해석 구역
+with st.container():
+    st.info(
+        "**이 그래프로 알 수 있는 것:** 10위권 내에 오랫동안 차트에 머무른 영화일수록 최종 총 관객 수도 높게 형성되는 강한 양(+)의 상관관계를 확인할 수 있습니다. 롱런 흥행(장기 상영) 여부가 관객 동원력의 주요 지표임을 보여줍니다."
+    )
