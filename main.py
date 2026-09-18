@@ -1,5 +1,7 @@
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import streamlit as st
 
 # 페이지 설정
@@ -15,6 +17,10 @@ def load_data():
 
     # 장르 전처리: 세로막대 기호(|)로 분리 후 첫 번째 장르만 추출
     df["genre"] = df["genre"].astype(str).str.split("|").str[0]
+
+    # 개봉일 전처리 및 월(Month) 추출
+    df["release_date"] = pd.to_datetime(df["release_date"], errors="coerce")
+    df["release_month"] = df["release_date"].dt.month
 
     return df
 
@@ -330,4 +336,68 @@ st.plotly_chart(fig_top10_scatter, use_container_width=True)
 with st.container():
     st.info(
         "**이 그래프로 알 수 있는 것:** 10위권 내에 오랫동안 차트에 머무른 영화일수록 최종 총 관객 수도 높게 형성되는 강한 양(+)의 상관관계를 확인할 수 있습니다. 롱런 흥행(장기 상영) 여부가 관객 동원력의 주요 지표임을 보여줍니다."
+    )
+
+# -------------------------------------------------------------------
+# 섹션 9: 월별 개봉 영화 편수 및 평균 관객 수 (이중 축 복합 차트)
+# -------------------------------------------------------------------
+st.divider()
+st.header("9. 월별 개봉 영화 편수 및 평균 관객 수 (월별 계절성)")
+
+# 월별 집계 데이터 생성 (1~12월)
+monthly_df = (
+    df.dropna(subset=["release_month"])
+    .groupby("release_month")
+    .agg(
+        movie_count=("movieNm", "count"),
+        avg_audi=("total_audi", "mean")
+    )
+    .reset_index()
+)
+monthly_df["release_month_str"] = monthly_df["release_month"].astype(int).astype(str) + "월"
+
+# 보조 축(Secondary Y-axis)을 포함하는 Subplot 생성
+fig_monthly = make_subplots(specs=[[{"secondary_y": True}]])
+
+# 1. 막대 차트: 개봉 영화 편수
+fig_monthly.add_trace(
+    go.Bar(
+        x=monthly_df["release_month_str"],
+        y=monthly_df["movie_count"],
+        name="개봉 영화 편수",
+        opacity=0.7,
+        hovertemplate="<b>%{x}</b><br>개봉 편수: %{y}편<extra></extra>",
+    ),
+    secondary_y=False,
+)
+
+# 2. 선 차트: 평균 관객 수
+fig_monthly.add_trace(
+    go.Scatter(
+        x=monthly_df["release_month_str"],
+        y=monthly_df["avg_audi"],
+        name="평균 관객 수",
+        mode="lines+markers",
+        line=dict(width=3, color="crimson"),
+        marker=dict(size=8),
+        hovertemplate="<b>%{x}</b><br>평균 관객 수: %{y:,.0f}명<extra></extra>",
+    ),
+    secondary_y=True,
+)
+
+fig_monthly.update_layout(
+    title="월별 개봉 영화 편수(막대) 및 평균 관객 수(선)",
+    xaxis_title="개봉 월",
+    legend=dict(x=0.01, y=0.99),
+)
+
+fig_monthly.update_yaxes(title_text="개봉 영화 편수(개)", secondary_y=False)
+fig_monthly.update_yaxes(title_text="평균 관객 수(명)", secondary_y=True)
+
+st.plotly_chart(fig_monthly, use_container_width=True)
+
+# 시각화 해석 구역
+with st.container():
+    st.info(
+        "**이 그래프로 알 수 있는 것:** 개봉 영화 편수가 많은 달(공급)과 실제 영화 1편당 평균 관객 수가 높은 달(수요/성수기) 간의 차이를 확인할 수 있습니다. 여름 방학(7~8월)이나 겨울/연말 시즌(12~1월)에 평균 관객 수가 높아지는 계절적 흥행 특성을 파악할 수 있습니다."
     )
